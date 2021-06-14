@@ -57,8 +57,8 @@ uint8_t* yuv422_uyvy_rotate_clockwise_90(uint8_t *dst, uint8_t *src, uint32_t wi
             psrc    -= bytesPerLine;
         }
 
-        dest   += step;
-        src += copyBytes;
+        dest += step;
+        src  += copyBytes;
     }
 
     return dst;
