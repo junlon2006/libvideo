@@ -63,3 +63,73 @@ uint8_t* yuv422_uyvy_rotate_clockwise_90(uint8_t *dst, uint8_t *src, uint32_t wi
 
     return dst;
 }
+
+uint8_t* yuv422_uyvy_rotate_clockwise_180(uint8_t *src, uint32_t width, uint32_t height)
+{
+    const int copyBytes  = 4;
+    const int totalBytes = (height * width) << 1;
+    const int end        = totalBytes >> 1;
+    unsigned char *dst   = src + totalBytes - copyBytes;
+    unsigned char *ret   = src;
+    unsigned char temp;
+    unsigned int tmp;
+    int i;
+
+    for (i = 0; i < end; i += copyBytes) {
+        tmp = *((unsigned int *)dst);
+        *((unsigned int *)dst) = *((unsigned int *)src);
+        *((unsigned int *)src) = tmp;
+
+        temp = dst[1];
+        dst[1] = dst[3];
+        dst[3] = temp;
+
+        temp   = src[1];
+        src[1] = src[3];
+        src[3] = temp;
+
+        dst -= copyBytes;
+        src += copyBytes;
+    }
+
+    return ret;
+}
+
+uint8_t* yuv422_uyvy_rotate_clockwise_270(uint8_t *dst, uint8_t *src, uint32_t width, uint32_t height)
+{
+    const int copyBytes    = 4;
+    const int bytesPerLine = width << 1;
+    const int step         = height << 2;
+    const int offset       = bytesPerLine - copyBytes;
+    unsigned char *dest    = dst;
+    unsigned char *source  = src;
+    unsigned char *psrc    = NULL;
+    unsigned char *pdst[2] = {NULL, NULL};
+    int i, j, k;
+    unsigned char temp;
+
+    for (i = 0; i < bytesPerLine; i += copyBytes) {
+        pdst[1] = dest;
+        pdst[0] = dest + (height << 1);
+        psrc    = source + offset;
+
+        for (j = 0; j < height; ++j) {
+            k = j % 2;
+            *((unsigned int *)pdst[k]) = *((unsigned int *)psrc);
+
+            if (1 == k) {
+                temp           = *(pdst[1] + 1);
+                *(pdst[1] + 1) = *(pdst[0] - 1);
+                *(pdst[0] - 1) = temp;
+            }
+
+            pdst[k] += copyBytes;
+            psrc    += bytesPerLine;
+        }
+
+        dest   += step;
+        source -= copyBytes;
+    }
+
+    return dst;
+}
